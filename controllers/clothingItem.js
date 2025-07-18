@@ -1,4 +1,4 @@
-// const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
 
 const {
@@ -30,12 +30,13 @@ const createItem = (req, res) => {
 
 const getItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => res.status(200).send(items))
+    .then((items) => res.status(200).send({ data: items }))
     .catch((err) => {
-      console.error(err.name, err.message);
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from getItems", error: err.message });
+      console.error("getItems error:", err.name, err.message);
+      res.status(INTERNAL_SERVER_ERROR).send({
+        message: "An error occurred while retrieving items.",
+        error: err.message,
+      });
     });
 };
 

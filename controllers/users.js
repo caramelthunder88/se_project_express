@@ -32,17 +32,29 @@ const createUser = (req, res) => {
 };
 
 const getUser = (req, res) => {
-  const { userId } = req.params;
-  User.findById(userId)
-    .orFail(new Error("NotFound"))
-    .then((users) => res.status(200).send(users))
+  User.findById(req.params.userId)
+    .orFail(() => {
+      const err = new Error("User not found");
+      err.name = "NotFoundError";
+      throw err;
+    })
+    .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      console.error(err);
-      if (err.message === "NotFound" || err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
+      console.error(err.name, err.message);
+
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid user ID format" });
       }
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+
+      if (err.name === "NotFoundError") {
+        return res.status(NOT_FOUND).send({ message: err.message });
+      }
+
+      return res
+        .status(err.statusCode || INTERNAL_SERVER_ERROR)
+        .send({ message: err.message || "Internal Server Error" });
     });
 };
-
 module.exports = { getUsers, createUser, getUser };
