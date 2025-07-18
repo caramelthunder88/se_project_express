@@ -16,14 +16,15 @@ const createItem = (req, res) => {
     imageUrl,
     owner: req.user._id,
   })
-    .then((item) => {
-      console.log(item);
-      res.send({ data: item });
-    })
-    .catch((e) => {
+    .then((item) => res.status(201).send({ data: item }))
+    .catch((err) => {
+      console.error(err.name, err.message);
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid item data" });
+      }
       res
         .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from createItem", e });
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -42,12 +43,24 @@ const updateItem = (req, res) => {
   const { imageUrl } = req.body;
 
   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
-    .orFail()
+    .orFail(() => {
+      const err = new Error("Item not found");
+      err.statusCode = NOT_FOUND;
+      throw err;
+    })
     .then((item) => res.status(200).send({ data: item }))
-    .catch((e) => {
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from updateItems", e });
+    .catch((err) => {
+      console.error(err.name, err.message);
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid item data" });
+      }
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid item ID format" });
+      }
+      const status = err.statusCode || INTERNAL_SERVER_ERROR;
+      res.status(status).send({ message: err.message });
     });
 };
 
@@ -56,12 +69,21 @@ const deleteItem = (req, res) => {
 
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
-    .orFail()
-    .then((item) => res.status(204).send({}))
-    .catch((e) => {
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from deleteItem", e });
+    .orFail(() => {
+      const err = new Error("Item not found");
+      err.statusCode = NOT_FOUND;
+      throw err;
+    })
+    .then((item) => res.status(200).send({ data: item }))
+    .catch((err) => {
+      console.error(err.name, err.message);
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid item ID format" });
+      }
+      const status = err.statusCode || INTERNAL_SERVER_ERROR;
+      res.status(status).send({ message: err.message });
     });
 };
 
@@ -79,6 +101,11 @@ const likeItem = (req, res) => {
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
       console.error(err.name, err.message);
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid item ID format" });
+      }
       const status = err.statusCode || INTERNAL_SERVER_ERROR;
       res.status(status).send({ message: err.message });
     });
@@ -98,6 +125,11 @@ const dislikeItem = (req, res) => {
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
       console.error(err.name, err.message);
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid item ID format" });
+      }
       const status = err.statusCode || INTERNAL_SERVER_ERROR;
       res.status(status).send({ message: err.message });
     });
