@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
 
 const {
@@ -47,7 +47,7 @@ const updateItem = (req, res) => {
     .orFail(() => {
       const err = new Error("Item not found");
       err.statusCode = NOT_FOUND;
-      throw err;
+      return Promise.reject(err);
     })
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
