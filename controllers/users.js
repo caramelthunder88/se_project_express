@@ -36,7 +36,7 @@ const getUser = (req, res) => {
     .orFail(() => {
       const err = new Error("User not found");
       err.name = "NotFoundError";
-      throw err;
+      return Promise.reject(err);
     })
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
