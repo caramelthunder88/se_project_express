@@ -4,21 +4,21 @@ const validator = require("validator");
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    reqired: true,
-    minlenth: 2,
-    maxlenth: 30,
+    required: true,
+    minlength: 2,
+    maxlength: 30,
   },
 
   avatar: {
     type: String,
-    reqired: [true, "The avatar field is required."],
+    required: [true, "The avatar field is required."],
     validate: {
       validator(value) {
         return validator.isURL(value);
       },
-      message: "You must enter a Valid URL",
+      message: "You must enter a valid URL",
     },
   },
 });
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = mongoose.model("User", userSchema);
