@@ -31,10 +31,11 @@ const createItem = (req, res) => {
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch((e) => {
+    .catch((err) => {
+      console.error(err.name, err.message);
       res
         .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from getItems", e });
+        .send({ message: "Error from getItems", error: err.message });
     });
 };
 
@@ -59,8 +60,9 @@ const updateItem = (req, res) => {
           .status(BAD_REQUEST)
           .send({ message: "Invalid item ID format" });
       }
-      const status = err.statusCode || INTERNAL_SERVER_ERROR;
-      res.status(status).send({ message: err.message });
+      return res
+        .status(err.statusCode || INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
@@ -82,8 +84,9 @@ const deleteItem = (req, res) => {
           .status(BAD_REQUEST)
           .send({ message: "Invalid item ID format" });
       }
-      const status = err.statusCode || INTERNAL_SERVER_ERROR;
-      res.status(status).send({ message: err.message });
+      return res
+        .status(err.statusCode || INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
@@ -106,11 +109,11 @@ const likeItem = (req, res) => {
           .status(BAD_REQUEST)
           .send({ message: "Invalid item ID format" });
       }
-      const status = err.statusCode || INTERNAL_SERVER_ERROR;
-      res.status(status).send({ message: err.message });
+      return res
+        .status(err.statusCode || INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
-
 const dislikeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
@@ -125,13 +128,15 @@ const dislikeItem = (req, res) => {
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
       console.error(err.name, err.message);
+
       if (err.name === "CastError") {
         return res
           .status(BAD_REQUEST)
           .send({ message: "Invalid item ID format" });
       }
-      const status = err.statusCode || INTERNAL_SERVER_ERROR;
-      res.status(status).send({ message: err.message });
+      return res
+        .status(err.statusCode || INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
