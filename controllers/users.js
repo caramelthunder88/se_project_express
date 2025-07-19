@@ -35,12 +35,13 @@ const getUser = (req, res) => {
   User.findById(req.params.userId)
     .orFail(() => {
       const err = new Error("User not found");
-      err.name = "NotFoundError";
-      return Promise.reject(err);
+      err.statusCode = NOT_FOUND;
+      throw err;
     })
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.status(200).send({ user }))
     .catch((err) => {
-      console.error(err.name, err.message);
+      console.error("Full error object:", err);
+      // console.error(err.name, err.message);
 
       if (err.name === "CastError") {
         return res
@@ -48,13 +49,13 @@ const getUser = (req, res) => {
           .send({ message: "Invalid user ID format" });
       }
 
-      if (err.name === "NotFoundError") {
-        return res.status(NOT_FOUND).send({ message: err.message });
+      if (err.statusCode === NOT_FOUND || err.message === "User not found") {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
       }
 
       return res
-        .status(err.statusCode || INTERNAL_SERVER_ERROR)
-        .send({ message: err.message || "Internal Server Error" });
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "Internal Server Error" });
     });
 };
 module.exports = { getUsers, createUser, getUser };

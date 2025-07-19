@@ -48,7 +48,7 @@ const updateItem = (req, res) => {
     .orFail(() => {
       const err = new Error("Item not found");
       err.statusCode = NOT_FOUND;
-      return Promise.reject(err);
+      throw err;
     })
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
@@ -75,7 +75,7 @@ const deleteItem = (req, res) => {
     .orFail(() => {
       const err = new Error("Item not found");
       err.statusCode = NOT_FOUND;
-      return Promise.reject(err);
+      throw err;
     })
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
@@ -100,7 +100,7 @@ const likeItem = (req, res) => {
     .orFail(() => {
       const err = new Error("Item not found");
       err.statusCode = NOT_FOUND;
-      return Promise.reject(err);
+      throw err;
     })
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
@@ -124,7 +124,7 @@ const dislikeItem = (req, res) => {
     .orFail(() => {
       const err = new Error("Item not found");
       err.statusCode = NOT_FOUND;
-      return Promise.reject(err);
+      throw err;
     })
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
