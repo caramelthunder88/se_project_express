@@ -35,35 +35,7 @@ const getItems = (req, res) => {
       console.error("getItems error:", err.name, err.message);
       res.status(INTERNAL_SERVER_ERROR).send({
         message: "An error occurred while retrieving items.",
-        error: err.message,
       });
-    });
-};
-
-const updateItem = (req, res) => {
-  const { itemId } = req.params;
-  const { imageUrl } = req.body;
-
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
-    .orFail(() => {
-      const err = new Error("Item not found");
-      err.statusCode = NOT_FOUND;
-      throw err;
-    })
-    .then((item) => res.status(200).send({ data: item }))
-    .catch((err) => {
-      console.error(err.name, err.message);
-      if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid item data" });
-      }
-      if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Invalid item ID format" });
-      }
-      return res
-        .status(err.statusCode || INTERNAL_SERVER_ERROR)
-        .send({ message: err.message });
     });
 };
 
@@ -85,9 +57,14 @@ const deleteItem = (req, res) => {
           .status(BAD_REQUEST)
           .send({ message: "Invalid item ID format" });
       }
+
+      if (err.statusCode === NOT_FOUND) {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+
       return res
-        .status(err.statusCode || INTERNAL_SERVER_ERROR)
-        .send({ message: err.message });
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -110,9 +87,13 @@ const likeItem = (req, res) => {
           .status(BAD_REQUEST)
           .send({ message: "Invalid item ID format" });
       }
+      if (err.statusCode === NOT_FOUND) {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
+
       return res
-        .status(err.statusCode || INTERNAL_SERVER_ERROR)
-        .send({ message: err.message });
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 const dislikeItem = (req, res) => {
@@ -135,16 +116,17 @@ const dislikeItem = (req, res) => {
           .status(BAD_REQUEST)
           .send({ message: "Invalid item ID format" });
       }
+      if (err.statusCode === NOT_FOUND) {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
       return res
-        .status(err.statusCode || INTERNAL_SERVER_ERROR)
-        .send({ message: err.message });
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
-
 module.exports = {
   createItem,
   getItems,
-  updateItem,
   deleteItem,
   likeItem,
   dislikeItem,

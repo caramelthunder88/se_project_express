@@ -10,8 +10,10 @@ const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
     .catch((err) => {
-      console.error(err);
-      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+      console.error("getUsers error:", err);
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -19,7 +21,7 @@ const createUser = (req, res) => {
   const { name, avatar } = req.body;
 
   User.create({ name, avatar })
-    .then((user) => res.status(201).send(user))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -41,7 +43,6 @@ const getUser = (req, res) => {
     .then((user) => res.status(200).send({ user }))
     .catch((err) => {
       console.error("Full error object:", err);
-      // console.error(err.name, err.message);
 
       if (err.name === "CastError") {
         return res
@@ -49,7 +50,7 @@ const getUser = (req, res) => {
           .send({ message: "Invalid user ID format" });
       }
 
-      if (err.statusCode === NOT_FOUND || err.message === "User not found") {
+      if (err.statusCode === NOT_FOUND) {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
 
