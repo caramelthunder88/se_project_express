@@ -22,32 +22,40 @@ const getUsers = (req, res) => {
     });
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   bcrypt
     .hash(password, 10)
-    .then((hash) => {
-      return User.create({ name, avatar, email, password: hash });
-    })
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => {
       const userWithoutPassword = user.toObject();
       delete userWithoutPassword.password;
-      res.status(201).send(userWithoutPassword);
+      return res.status(201).send(userWithoutPassword);
     })
+    //.catch((err) => {
+    // console.error("createUser error:", err);
     .catch((err) => {
       console.error("createUser error:", err);
+      console.log("Error name:", err.name);
+      console.log("Error code:", err.code);
+      console.log("Full error object:", err);
+
       if (err.code === 11000) {
-        return res
-          .status(CONFLICT_ERROR)
-          .send({ message: "Email already exists." });
+        const conflictError = new Error("Email already exists.");
+        conflictError.statusCode = CONFLICT_ERROR;
+        return next(conflictError);
       }
+
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: err.message });
+        const badRequestError = new Error(err.message);
+        badRequestError.statusCode = BAD_REQUEST;
+        return next(badRequestError);
       }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error occured on the server." });
+
+      const internalError = new Error("An error occurred on the server.");
+      internalError.statusCode = INTERNAL_SERVER_ERROR;
+      return next(internalError);
     });
 };
 
@@ -80,6 +88,12 @@ const getUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Email and password are required" });
+  }
 
   User.findUserByCredentials(email, password)
     .then((user) => {

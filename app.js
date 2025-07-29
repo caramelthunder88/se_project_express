@@ -6,6 +6,7 @@ const app = express();
 const auth = require("./middlewares/auth");
 const mainRouter = require("./routes");
 const { login, createUser } = require("./controllers/users");
+const errorHandler = require("./middlewares/errors");
 
 const { PORT = 3001 } = process.env;
 
@@ -25,6 +26,8 @@ app.post("/signup", createUser);
 app.use(auth);
 
 app.use("/", mainRouter);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Listening on Port ${PORT}`);
