@@ -94,4 +94,75 @@ const login = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser, login };
+const getCurrentUser = (req, res) => {
+  User.findById(req.user._id)
+    .orFail(() => {
+      const err = new Error("User not found");
+      err.statusCode = NOT_FOUND;
+      throw err;
+    })
+    .then((user) => res.status(200).send(user))
+    .catch((err) => {
+      console.error("getCurrentUser error:", err);
+
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid user ID format" });
+      }
+
+      if (err.statusCode === NOT_FOUND) {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "Internal Server Error" });
+    });
+};
+
+const updateCurrentUser = (req, res) => {
+  const { name, avatar } = req.body;
+
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, avatar },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
+    .orFail(() => {
+      const err = new Error("User not found");
+      err.statusCode = NOT_FOUND;
+      throw err;
+    })
+    .then((user) => res.status(200).send(user))
+    .catch((err) => {
+      console.error("updateCurrentUser error:", err);
+
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: err.message });
+      }
+
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid data format" });
+      }
+
+      if (err.statusCode === NOT_FOUND) {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "Internal Server Error" });
+    });
+};
+module.exports = {
+  getUsers,
+  createUser,
+  getUser,
+  login,
+  getCurrentUser,
+  updateCurrentUser,
+};
