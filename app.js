@@ -25,11 +25,14 @@ app.post("/signup", createUser);
 
 if (process.env.NODE_ENV === "test") {
   app.use((req, res, next) => {
-    req.user = { _id: "5d8b8592978f8bd833ca8133" };
-    return next();
+    req.user = {
+      _id: "5d8b8592978f8bd833ca8133",
+    };
+    next();
   });
+} else {
+  app.use(auth);
 }
-app.use(auth);
 
 app.use("/", mainRouter);
 
