@@ -6,6 +6,8 @@ const app = express();
 const auth = require("./middlewares/auth");
 const mainRouter = require("./routes");
 const { login, createUser } = require("./controllers/users");
+const { getItems } = require("./controllers/clothingItem");
+
 const errorHandler = require("./middlewares/errors");
 
 const { PORT = 3001 } = process.env;
@@ -22,6 +24,7 @@ mongoose
 
 app.post("/signin", login);
 app.post("/signup", createUser);
+app.get("/items", getItems);
 
 if (process.env.NODE_ENV === "test") {
   app.use((req, res, next) => {
