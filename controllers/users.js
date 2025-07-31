@@ -33,13 +33,13 @@ const createUser = (req, res, next) => {
       delete userWithoutPassword.password;
       return res.status(201).send(userWithoutPassword);
     })
+    // .catch((err) => {
+    // console.error("createUser error:", err);
     .catch((err) => {
       console.error("createUser error:", err);
-      //.catch((err) => {
-      //console.error("createUser error:", err);
-      //console.log("Error name:", err.name);
-      //console.log("Error code:", err.code);
-      //console.log("Full error object:", err);
+      console.log("Error name:", err.name);
+      console.log("Error code:", err.code);
+      console.log("Full error object:", err);
 
       if (err.code === 11000) {
         const conflictError = new Error("Email already exists.");
@@ -95,16 +95,18 @@ const login = (req, res) => {
       .send({ message: "Email and password are required" });
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      return res.send({ token });
     })
     .catch((err) => {
       console.error("Login error:", err);
-      res.status(UNAUTHORIZED).send({ message: "Incorrect email or password" });
+      return res
+        .status(UNAUTHORIZED)
+        .send({ message: "Incorrect email or password" });
     });
 };
 
