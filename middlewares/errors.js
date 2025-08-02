@@ -11,4 +11,6 @@ module.exports = (err, req, res, next) => {
           ? "An internal server error occurred"
           : message,
     });
+
+  next();
 };
