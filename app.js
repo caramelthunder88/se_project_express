@@ -2,6 +2,7 @@ const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const { errors } = require("celebrate");
+require("dotenv").config();
 const {
   validateSigninBody,
   validateSignupBody,
@@ -15,8 +16,6 @@ const { login, createUser } = require("./controllers/users");
 const { getItems } = require("./controllers/clothingItem");
 
 const errorHandler = require("./middlewares/error-handler.js");
-
-// const errorHandler = require("./middlewares/errors");
 
 const { PORT = 3001 } = process.env;
 
