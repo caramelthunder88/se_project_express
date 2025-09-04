@@ -25,3 +25,8 @@ https://github.com/caramelthunder88/se_project_express
 ## Frontend Repository
 
 You can find the frontend code here: https://github.com/caramelthunder88/se_project_react
+
+## Deployed URLs
+
+Frontend: https://wtwr88.jumpingcrab.com
+Backend (API base): https://api.wtwr88.jumpingcrab.com
