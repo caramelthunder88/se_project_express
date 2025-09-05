@@ -1,9 +1,16 @@
+/* eslint-disable max-classes-per-file */
+
 class ApiError extends Error {
   constructor(statusCode, message) {
     super(message);
     this.statusCode = statusCode;
+    this.name = this.constructor.name;
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
   }
 }
+
 class BadRequestError extends ApiError {
   constructor(m = "Bad Request") {
     super(400, m);

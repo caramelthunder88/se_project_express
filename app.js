@@ -15,7 +15,9 @@ const mainRouter = require("./routes");
 const { login, createUser } = require("./controllers/users");
 const { getItems } = require("./controllers/clothingItem");
 
-const errorHandler = require("./middlewares/error-handler.js");
+const errorHandler = require("./middlewares/error-handler");
+
+const { logger } = require("./middlewares/logger");
 
 const { PORT = 3001 } = process.env;
 
@@ -27,9 +29,9 @@ app.use(requestLogger);
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
-    console.log("Connected to DB");
+    logger.info("Connected to DB");
   })
-  .catch(console.error);
+  .catch((err) => logger.error("MongoDB connection error", { err }));
 
 app.get("/crash-test", () => {
   setTimeout(() => {
@@ -51,5 +53,5 @@ app.use(errors());
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Listening on Port ${PORT}`);
+  logger.info(`Listening on Port ${PORT}`);
 });

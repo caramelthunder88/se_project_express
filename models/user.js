@@ -14,9 +14,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "The avatar field is required."],
     validate: {
-      validator(value) {
-        return validator.isURL(value);
-      },
+      validator: (v) =>
+        validator.isURL(v, {
+          protocols: ["http", "https"],
+          require_protocol: true,
+        }),
       message: "You must enter a valid URL",
     },
   },
@@ -25,6 +27,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Email is required."],
     unique: true,
+    lowercase: true,
+    trim: true,
     validate: {
       validator: (value) => validator.isEmail(value),
       message: "Invalid email format",
@@ -38,22 +42,18 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.statics.findUserByCredentials = function (email, password) {
-  return this.findOne({ email })
-    .select("+password")
-    .then((user) => {
-      if (!user) {
-        return Promise.reject(new Error("Incorrect email or password"));
-      }
+userSchema.statics.findUserByCredentials = async function findUserByCredentials(
+  email,
+  password
+) {
+  const normalized = email.trim().toLowerCase();
+  const user = await this.findOne({ email: normalized }).select("+password");
+  if (!user) throw new Error("Incorrect email or password");
 
-      return bcrypt.compare(password, user.password).then((matched) => {
-        if (!matched) {
-          return Promise.reject(new Error("Incorrect email or password"));
-        }
+  const matched = await bcrypt.compare(password, user.password);
+  if (!matched) throw new Error("Incorrect email or password");
 
-        return user;
-      });
-    });
+  return user;
 };
 
 module.exports = mongoose.model("User", userSchema);

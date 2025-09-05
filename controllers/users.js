@@ -33,7 +33,7 @@ const createUser = (req, res, next) => {
     });
 };
 
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   User.findById(req.params.userId)
     .orFail(() => new NotFoundError("User not found"))
     .then((user) => res.status(200).send({ user }))
@@ -45,7 +45,7 @@ const getUser = (req, res) => {
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -57,12 +57,12 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      return res.send({ token });
     })
     .catch(() => next(new UnauthorizedError("Incorrect email or password")));
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(() => new NotFoundError("User not found"))
     .then((user) => res.status(200).send(user))
@@ -74,7 +74,7 @@ const getCurrentUser = (req, res) => {
     });
 };
 
-const updateCurrentUser = (req, res) => {
+const updateCurrentUser = (req, res, next) => {
   const { name, avatar } = req.body;
 
   User.findByIdAndUpdate(

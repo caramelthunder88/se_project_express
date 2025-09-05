@@ -19,7 +19,6 @@ const createItem = (req, res, next) => {
   })
     .then((item) => res.status(201).send({ data: item }))
     .catch((err) => {
-      console.error(err.name, err.message);
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Invalid item data"));
       }
